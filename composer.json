@@ -1,0 +1,10 @@
+{
+    "name": "gesimatic/backup",
+    "description": "Plugin to add backup functionality to gesimatic.",
+    "type": "wordpress-plugin",
+    "autoload": {
+        "psr-4": {
+            "GesimaticBackup\\": "includes /"
+        }
+    }
+}
