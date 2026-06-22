@@ -3,7 +3,7 @@
 namespace GesimaticBackup\Core;
 
 use GesimaticBackup\Admin\Admin;
-use GesimaticBackup\Api\GetBackupDownload;
+use GesimaticBackup\Api\GetBackupDownloadAction;
 
 /**
  * Class Core

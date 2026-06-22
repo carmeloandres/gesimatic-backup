@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react'
 import { gt } from './helpers/gt.js' 
+import './GesimaticBackupApp.css'
 
 export const GesimaticBackupApp = () => {
 
   // It gets the credentials for access to the API
-  const { restUrl, nonce, isSuperAdmin } = gesimaticBackupAdmin;
+  const { restUrl, nonce } = gesimaticBackupAdmin;
 
     // State to store the class and the content of alerts
     const [alert,setAlert] = useState({class:'gsmtc-display-none' ,content:''});    
 
+    // To disable the submit button in submit event     
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const onSubmit = async (event) =>{
         event.preventDefault();
 
+        setIsSubmitting(true);
         setAlert({class:'gsmtc-notice gsmtc-notice-warning',content:gt('creating_backup_download','Creating backup and downloading file.. Please wait')});
 
         // create the header with the nonce token
@@ -34,6 +39,8 @@ export const GesimaticBackupApp = () => {
 
             // get the response header
             const contentType = response.headers.get('Content-Type');
+
+            console.log('contentType :',contentType);
 
             if (contentType.includes('application/json')) {
                 // Manejar error
@@ -71,28 +78,8 @@ export const GesimaticBackupApp = () => {
                 setAlert({class:'gsmtc-notice gsmtc-notice-error',content:gt('error_downloading_backup','Error downloading the backup file')});
         }
         
+        setIsSubmitting(false);
 
-/*
-        const downloadData = await downloadFile(restUrl, nonce, 'get_backup_download');
-
-        if (downloadData){
-            setAlert({class:'gsmtc-notice gsmtc-notice-success',content:gt('backup_downloaded_successfully','The backup file has been downloaded successfully')});
-/*
-            if (isHttps){
-                const downloadInstaller = await downloadFile(restUrl, nonce, 'get_backup_installer');
-    
-                if (downloadInstaller){
-                    setAlert({class:'gsmtc-notice gsmtc-notice-success',content:gt('backup_installer_downloaded_successfully','The backup and the installer files has been downloaded successfully')});
-                    setTimeout(() => {setAlert({class:'gsmtc-display-none',content:''})},7000);
-                } else {
-                    setAlert({class:'gsmtc-notice gsmtc-notice-error',content:gt('error_downloading_installer','Error downloading the installer file')});
-                }
-            }  */
-/*        } else {
-                setAlert({class:'gsmtc-notice gsmtc-notice-error',content:gt('error_downloading_backup','Error downloading the backup file')});
-
-        }
-  */  
     }
     return (
     <>
@@ -100,23 +87,10 @@ export const GesimaticBackupApp = () => {
             <h2>{ gt('backup_page','Backup page') }</h2>
             <form onSubmit={onSubmit} >
                 <p className='submit'>
-                { ! (isSuperAdmin) && <input type="submit" name="submit-gsmtc-backup" id="submit-gsmtc-backup" className="button button-primary" value={ gt('download_backup','Download backup') } />  }
-
-                { (isSuperAdmin) && <input type="submit" name="submit-gsmtc-backup" id="submit-gsmtc-backup" className="button button-primary" value={ gt('download_backup','Download backup') } /> }
-
+                    <input type="submit" name="submit-gsmtc-backup" id="submit-gsmtc-backup" className="button button-primary" value={ gt('download_backup','Download backup') } disabled={isSubmitting} /> 
                 </p>
             </form>
-            { false &&
-            <form onSubmit={onSubmitInstaller} >
-                <p className='submit'>
-                { ! (isSuperAdmin) && <input type="submit" name="submit-gsmtc-installer" id="submit-gsmtc-installer" className="button button-primary" value={ gt('download_installer','Download installer') } />  }
-
-                { (isSuperAdmin) && <input type="submit" name="submit-gsmtc-installer" id="submit-gsmtc-installer" className="button button-primary" value={ gt('download_installer','Download installer') } /> }
-
-                </p>
-            </form>
-            }
-            <div className={alert.class}>
+             <div className={alert.class}>
                 <p>{alert.content}</p>
             </div>             
         </div>   

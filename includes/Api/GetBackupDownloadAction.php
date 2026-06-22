@@ -30,10 +30,20 @@ class GetBackupDownloadAction {
     public static function validate($params){
         // check if action is as expected
         if(isset($params['action']) && ($params['action'] === 'get_backup_download')){
+            
+            // Check if user is allowed to access the backup functionality
+            // Show only for: single installations OR multisite installations where user is superadmin
+            $is_multisite = function_exists( 'is_multisite' ) && is_multisite();
+            $is_super_admin = $is_multisite ? is_super_admin() : false;
+            
+            // If multisite but user is not superadmin, deny access
+            if ( $is_multisite && ! $is_super_admin ) {
+                return false;
+            }
+            
             return true;
         } else return false;
 
-        return false;
     }
 
     /**
@@ -47,6 +57,8 @@ class GetBackupDownloadAction {
     	// wordpress prefers to use they own file system API to manage files
 		global $wp_filesystem;
 
+        error_log ('GetBackupDownloadAction validate, $validated: '.var_export($validated,true));
+
         if ($validated) {
 
         	if ( empty( $wp_filesystem ) ) {
@@ -54,7 +66,8 @@ class GetBackupDownloadAction {
 			    WP_Filesystem();
 		    }
 
-            $backup_dir = $this->get_backup_dir();
+            $backup_dir = self::get_backup_dir();
+            error_log ('GetBackupDownloadAction validate, $backup_dir: '.var_export($backup_dir,true));
 
             // checks if ABSPATH is readable
 		    if ( ! $wp_filesystem->is_readable(ABSPATH)) return CommonResponse::error(['message' => es_html__("Your WordPress installation folder is protected and cannot be read. You should change the permissions to proceed again.",'gesimatic-backup')]); 
@@ -66,6 +79,8 @@ class GetBackupDownloadAction {
 		    $home_url_raw = home_url();
     	    $parsed_url = wp_parse_url( $home_url_raw );
 
+            error_log ('GetBackupDownloadAction validate, $parsed_url: '.var_export($parsed_url,true));
+
 		    if ( ! isset($parsed_url['host'])) return CommonResponse::error(['message' => es_html__('Parsed home url failed.','gesimatic-backup')]);
 		
 
@@ -76,9 +91,13 @@ class GetBackupDownloadAction {
 		    $db_file = $backup_dir . "/gesimatic_db_backup_{$timestamp}_{$home_url}.sql";
 		    $backup_file = $backup_dir . "/gesimatic_backup_{$timestamp}_{$home_url}.zip";
 
-	    	if ( ! $this->export_database($db_file)) return CommonResponse::error(['message' => esc_html__('Database export failed.','gesimatic-backup')]);
+            error_log ('GetBackupDownloadAction validate, $backup_file: '.var_export($backup_file,true));
 
-            if ($this->create_backup_file(ABSPATH,$backup_file)){
+	    	if ( ! self::export_database($db_file)) return CommonResponse::error(['message' => esc_html__('Database export failed.','gesimatic-backup')]);
+
+            error_log ('GetBackupDownloadAction validate, $db_file: '.var_export($db_file,true));
+
+            if (self::create_backup_file(ABSPATH,$backup_file)){
                 //Schedule deletion no matter what happens at the end of the request
                 register_shutdown_function(function() use ($backup_file, $db_file) {
                     // Delete files
@@ -127,7 +146,7 @@ class GetBackupDownloadAction {
 	 * @param string $sourcePath the path to backup, $outputFile The file name to create the zip backup file.
 	 * @return bool True on success, false on failure.
 	 */
-	function create_backup_file($source_path, $output_file)
+	static function create_backup_file($source_path, $output_file)
 	{
 		// delete last '/' if exists
 		$source_dir = rtrim($source_path, '/');
@@ -142,26 +161,60 @@ class GetBackupDownloadAction {
         	return false;
     	}
 
+		$source_dir_real = realpath($source_dir) ?: $source_dir;
+		$output_file_real = realpath($output_file) ?: $output_file;
+		$output_dir_real = realpath(dirname($output_file)) ?: dirname($output_file);
+
 		$it = new \RecursiveIteratorIterator(
-			new \RecursiveDirectoryIterator($source_dir, \FilesystemIterator::SKIP_DOTS),
+			new \RecursiveDirectoryIterator($source_dir_real, \FilesystemIterator::SKIP_DOTS),
 			\RecursiveIteratorIterator::SELF_FIRST
 		);
 
+        error_log ('GetBackupDownloadAction create_backup_file, $it: '.var_export($it,true));
+
 		foreach ($it as $fs) {
-			$real  = $fs->getRealPath();
-			$local = substr($real, strlen($source_dir) + 1); // ruta relativa dentro del zip
+    
+//            error_log ('GetBackupDownloadAction create_backup_file, $fs: '.var_export($fs,true));
+
+            $real = $fs->getRealPath();
+			if (! $real) {
+				continue;
+			}
+            
+			if ($real === $output_file_real || strpos($real, $output_dir_real . DIRECTORY_SEPARATOR) === 0) {
+                continue;
+            }
+                
+            if (strpos($real,'node_modules') !== false ) {
+                continue;
+            }
+                    
+                    
+            $local = substr($real, strlen($source_dir_real) + 1); // ruta relativa dentro del zip
+            if ($local === false || $local === '') {
+                continue;
+            }
+                        
+//            error_log ('GetBackupDownloadAction create_backup_file, $real: '.var_export($real,true));
+
+            $local = str_replace('\\', '/', $local);
 			if ($fs->isDir()) {
 				$zip->addEmptyDir($local);
 			} else {
 				if (!$zip->addFile($real, $local)) {
-					$zip->close();
+                error_log ('GetBackupDownloadAction create_backup_file, $real: '.var_export($real,true));
+                error_log ('GetBackupDownloadAction create_backup_file, $local: '.var_export($local,true));
+                $zip->close();
 					return false;
 				}
 			}
 		}
 
-	    $zip->close();
-    	return file_exists($output_file) && filesize($output_file) > 0;
+		$zip->close();
+
+        error_log ('GetBackupDownloadAction create_backup_file, $output_file: '.var_export($output_file,true));
+
+        return file_exists($output_file) && filesize($output_file) > 0;
 	}
 
 
@@ -171,7 +224,7 @@ class GetBackupDownloadAction {
 	 * @param string $outputFile The path to save the SQL dump.
 	 * @return bool True on success, false on failure.
 	 */
-	function export_database($outputFile)
+	static function export_database($outputFile)
 	{
 		global $wpdb;
 
@@ -200,18 +253,22 @@ class GetBackupDownloadAction {
      * @param void
      * @return string the full path to gesimatic-backups folder
      */
-    function get_backup_dir(): string {
+    static function get_backup_dir(): string {
 
         // Create the gesimatic backups dir
 		$backup_dir = WP_CONTENT_DIR . '/gesimatic-backups';
         
 		if ( ! file_exists($backup_dir)) {
             mkdir($backup_dir, 0755, true);
+        }
 			// Creating a empty index.php and .httacces files to protect the gesimatic-backups folder
-            $empty_index = $backup_dir.'/index.php';
-            $this->create_empty_index($empty_index);
-            $deny_htaccess = $backup_dir.'/.htaccess';
-            $this->create_htaccess($deny_htaccess);            
+        $empty_index = $backup_dir.'/index.php';
+		if ( ! file_exists($empty_index)) {
+            self::create_empty_index($empty_index);
+        }
+        $deny_htaccess = $backup_dir.'/.htaccess';
+		if ( ! file_exists($deny_htaccess)) {
+            self::create_htaccess($deny_htaccess);            
         }
         
         return $backup_dir;
@@ -223,7 +280,7 @@ class GetBackupDownloadAction {
      * @param string $path Absolute, path and name to file
      * @return bool true if exit, false if file creation fails
      */
-    function create_empty_index($full_file_name): bool {
+    static function create_empty_index($full_file_name): bool {
         $result = false;
 
         $fichero = fopen($full_file_name,'w');
@@ -241,7 +298,7 @@ class GetBackupDownloadAction {
      * @param string $path Absolute, path and name to file
      * @return bool true if exit, false if file creation fails
      */
-    function create_htaccess($full_file_name): bool {
+    static function create_htaccess($full_file_name): bool {
         $result = false;
 
         $fichero = fopen($full_file_name,'w');

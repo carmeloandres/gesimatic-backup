@@ -1,0 +1,43 @@
+.gsmtc-admin-container{
+    padding: 1px;
+}
+.gsmtc-display-none{
+    display: none;
+}
+
+.gsmtc-notice{
+    background-color: #fff;
+    border: 1px solid #c3c4c7;
+    border-left-width: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    box-sizing: border-box;
+    display: block;
+    margin: 5px 0;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+    text-align:left;
+    padding: 1px 12px;
+    width: 100%
+}
+.gsmtc-notice-fade-out{
+    opacity: 0;
+}
+.gsmtc-notice p{
+    margin:.5em 0;
+    padding: 2px;
+}
+.gsmtc-notice-info{
+    border-left-color: #084298;
+}
+
+.gsmtc-notice-warning{
+    border-left-color: #dba617;
+}
+
+.gsmtc-notice-success{
+    border-left-color: #0f5132;
+}
+
+.gsmtc-notice-error{
+    border-left-color: #842029;
+}

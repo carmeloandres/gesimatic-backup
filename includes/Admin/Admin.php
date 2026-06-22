@@ -13,6 +13,16 @@ class Admin {
      * Register the gesimatic-smtp module page.
      */
     public function register_admin_page(): void {
+        
+        // Check if user is allowed to see the backup page
+        // Show only for: single installations OR multisite installations where user is superadmin
+        $is_multisite = function_exists( 'is_multisite' ) && is_multisite();
+        $is_super_admin = $is_multisite ? is_super_admin() : false;
+        
+        // If multisite but user is not superadmin, don't register the menu
+        if ( $is_multisite && ! $is_super_admin ) {
+            return;
+        }
             
         add_submenu_page(
             'non_existent_parent',
@@ -34,14 +44,24 @@ class Admin {
         if ( 'admin_page_gesimatic-backup' !== $hook ) {
             return;
         }
-/*        
+        
+        // Check if user is allowed to access the backup page
+        // Show only for: single installations OR multisite installations where user is superadmin
+        $is_multisite = function_exists( 'is_multisite' ) && is_multisite();
+        $is_super_admin = $is_multisite ? is_super_admin() : false;
+        
+        // If multisite but user is not superadmin, don't load assets
+        if ( $is_multisite && ! $is_super_admin ) {
+            return;
+        }
+        
         wp_enqueue_style(
             'gesimatic-backup-admin-css',                               
             GESIMATIC_BACKUP_URL . 'assets/css/gesimatic-backup-admin.min.css', 
             array(),                                             
             GESIMATIC_BACKUP_VERSION                                    
         );
-*/
+
         wp_enqueue_script(
             'gesimatic-backup-admin-js',
             GESIMATIC_BACKUP_URL . 'assets/js/gesimatic-backup-admin.js',
@@ -50,17 +70,12 @@ class Admin {
             true                                             
         );
 
-        if (function_exists( 'is_multisite' ) && is_multisite() && is_super_admin())
-            $isSuperAdmin = true;
-        else $isSuperAdmin = false;            
-
         wp_localize_script(
             'gesimatic-backup-admin-js',
             'gesimaticBackupAdmin',
             array(
                 "restUrl" => rest_url( '/gesimatic/v1/admin' ),
-                "nonce" => wp_create_nonce( 'wp_rest' ),
-                "isSuperAdmin" => $isSuperAdmin
+                "nonce" => wp_create_nonce( 'wp_rest' )
             )
         );
     }
@@ -73,6 +88,15 @@ class Admin {
         global $wp_roles;
 
         if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You do not have sufficient permissions to access this page.','gesimatic-backup' ) );
+        }
+        
+        // Additional security check: verify user is allowed to access backup page
+        // Show only for: single installations OR multisite installations where user is superadmin
+        $is_multisite = function_exists( 'is_multisite' ) && is_multisite();
+        $is_super_admin = $is_multisite ? is_super_admin() : false;
+        
+        if ( $is_multisite && ! $is_super_admin ) {
             wp_die( esc_html__( 'You do not have sufficient permissions to access this page.','gesimatic-backup' ) );
         }
 

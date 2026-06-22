@@ -11,11 +11,8 @@ class Translations {
              'creating_backup_download' =>  __('Creating backup and downloading file.. Please wait','gesimatic-backup'),
              'backup_downloaded_successfully' =>  __('The backup file has been downloaded successfully','gesimatic-backup'),
              'error_downloading_backup' =>  __('Error downloading the backup file','gesimatic-backup'),
-             'backup_installer_downloaded_successfully' =>  __('The backup and the installer files has been downloaded successfully','gesimatic-backup'),
-             'error_downloading_installer' =>  __('Error downloading the installer file','gesimatic-backup'),
              'backup_page' =>  __('Backup page','gesimatic-backup'),
              'download_backup' =>  __('Download backup','gesimatic-backup'),
-             'download_installer' =>  __('Download installer','gesimatic-backup'),
             );
 
         return $output;
