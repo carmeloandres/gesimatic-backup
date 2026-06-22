@@ -2,14 +2,9 @@
 
 namespace GesimaticBackup\Core;
 
-/*
-use GesimaticSmtp\Core\Setup;
-use GesimaticSmtp\Admin\Admin;
-*/
+
+use GesimaticBackup\Admin\Admin;
 use GesimaticBackup\Api\GetBackupDownload;
-/*use GesimaticSmtp\Api\SetSmtpSettings;
-use GesimaticSmtp\Api\GetSmtpSettings;
-*/
 
 /**
  * Class Core
@@ -35,8 +30,6 @@ class Core {
      */    
     function __construct()
     {
-        //call to parent constructor
-//        parent::__construct();
 
         // To register the gesimatic-smtp admin page
         add_action('admin_menu',[$this,'register_admin_page']);
@@ -49,13 +42,54 @@ class Core {
 
         // adding the smtp to gesimatic admin page
         add_filter( 'gesimatic_admin_tabs', function( $tabs ) {
-                $tabs['gesimatic-smtp'] = esc_html__( 'SMTP', 'gesimatic-smtp' );
+                $tabs['gesimatic-backup'] = esc_html__( 'Backup', 'gesimatic-backup' );
             return $tabs;
         });
 
         // adds the admin api actions
         add_filter('gesimatic_admin_actions',[$this,'register_gesimatic_backup_api_actions']);
 
+    }
+    /**
+     * Loads the Admin class to register the gesimatic-smtp admin page
+     * 
+     * @param void
+     * @return void
+     */
+    function register_admin_page(): void{
+
+        // Load the Admin class if not is loaded
+        if (! isset($this->instances['admin']))
+            $this->instances['admin'] = new Admin();
+        $this->instances['admin']->register_admin_page();
+    }
+
+    /**
+     * Loads the Admin class to enqueue the gesimatic-smtp assets
+     * 
+     * @param void
+     * @return void
+     */
+    function admin_enqueue_assets($hook): void{
+
+        // Load the Admin class if not is loaded
+        if (! isset($this->instances['admin']))
+            $this->instances['admin'] = new Admin();
+        $this->instances['admin']->admin_enqueue_assets($hook);
+    }
+
+    /**
+     * Force highlighting of the main menu using CSS/JS when on a hidden modular page.
+     * 
+     * @param void
+     * @return void
+     */
+    function force_menu_highlight(): void{
+
+        // Load the Admin class if not is loaded
+        if (! isset($this->instances['admin']))
+            $this->instances['admin'] = new Admin();
+        $this->instances['admin']->force_menu_highlight();
     }
 
     /**
