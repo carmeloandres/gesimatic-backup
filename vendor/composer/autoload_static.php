@@ -16,12 +16,16 @@ class ComposerStaticInit6c806071461106519314985a914ffd19
     public static $prefixDirsPsr4 = array (
         'GesimaticBackup\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/includes ',
+            0 => __DIR__ . '/../..' . '/includes',
         ),
     );
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+        'GesimaticBackup\\Admin\\Admin' => __DIR__ . '/../..' . '/includes/Admin/Admin.php',
+        'GesimaticBackup\\Api\\GetBackupDownloadAction' => __DIR__ . '/../..' . '/includes/Api/GetBackupDownloadAction.php',
+        'GesimaticBackup\\Core\\Core' => __DIR__ . '/../..' . '/includes/Core/Core.php',
+        'GesimaticBackup\\Translations\\Translations' => __DIR__ . '/../..' . '/includes/Translations/Translations.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

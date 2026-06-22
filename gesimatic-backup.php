@@ -39,31 +39,16 @@ define ('GESIMATIC_BACKUP_PATH',plugin_dir_path(__FILE__));
 if (function_exists('is_multisite') && is_multisite()) {
     define ('GESIMATIC_BACKUP_URL',esc_url( network_site_url()).'wp-content/plugins/gesimatic-backup/');
 } else { define ('GESIMATIC_BACKUP_URL',home_url('/wp-content/plugins/gesimatic-backup/')); }
-define ('GESIMATIC_BACKUP_VERSION',425);
+define ('GESIMATIC_BACKUP_VERSION',1);
 
 /**
  * Autoload dependencies via Composer
 */
-
-    require_once GESIMATIC_BACKUP_PATH . 'vendor/autoload.php';
-
-/**
- * Registers the plugin activation hook for the plugin.
- *
- * When the plugin is activated, WordPress will automatically execute
- * the {@see gesimatic_translations_activate()} function to perform the initial
- * setup tasks required by the plugin.
- *
- * @since 1.0.0
- *
- * @param string $file     The path to the main plugin file (`__FILE__`).
- * @param string $callback The name of the function to execute on activation.
- *
- * @see https://developer.wordpress.org/reference/functions/register_activation_hook/
- */
-register_activation_hook(__FILE__,'gesimatic_static_forms_activate');
+require_once GESIMATIC_BACKUP_PATH . 'vendor/autoload.php';
 
 $gesimatic_backup = new GesimaticBackup\Core\Core();
+
+
 
 
 

@@ -7,4 +7,8 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
+    'GesimaticBackup\\Admin\\Admin' => $baseDir . '/includes/Admin/Admin.php',
+    'GesimaticBackup\\Api\\GetBackupDownloadAction' => $baseDir . '/includes/Api/GetBackupDownloadAction.php',
+    'GesimaticBackup\\Core\\Core' => $baseDir . '/includes/Core/Core.php',
+    'GesimaticBackup\\Translations\\Translations' => $baseDir . '/includes/Translations/Translations.php',
 );

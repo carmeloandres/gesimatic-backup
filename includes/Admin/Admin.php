@@ -34,14 +34,14 @@ class Admin {
         if ( 'admin_page_gesimatic-backup' !== $hook ) {
             return;
         }
-        
+/*        
         wp_enqueue_style(
             'gesimatic-backup-admin-css',                               
             GESIMATIC_BACKUP_URL . 'assets/css/gesimatic-backup-admin.min.css', 
             array(),                                             
             GESIMATIC_BACKUP_VERSION                                    
         );
-
+*/
         wp_enqueue_script(
             'gesimatic-backup-admin-js',
             GESIMATIC_BACKUP_URL . 'assets/js/gesimatic-backup-admin.js',

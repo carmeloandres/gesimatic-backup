@@ -2,7 +2,6 @@
 
 namespace GesimaticBackup\Core;
 
-
 use GesimaticBackup\Admin\Admin;
 use GesimaticBackup\Api\GetBackupDownload;
 
@@ -11,7 +10,7 @@ use GesimaticBackup\Api\GetBackupDownload;
  *
  * This class contains the code necessary to manage the necesary function hooks.
  *
- * @package Gesimatic
+ * @package GesimaticBackup\Core
  */
 class Core {
 
@@ -28,8 +27,7 @@ class Core {
      * Sets the value of the properties, adds the actions necessary for the operation of
      * class.
      */    
-    function __construct()
-    {
+    function __construct(){
 
         // To register the gesimatic-smtp admin page
         add_action('admin_menu',[$this,'register_admin_page']);
