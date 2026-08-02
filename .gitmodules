@@ -1,0 +1,3 @@
+[submodule "docs/ai/common"]
+	path = docs/ai/common
+	url = https://github.com/carmeloandres/gesimatic-ai-common.git
